@@ -55,20 +55,18 @@ export const createPost = (id, { postId, name, email, body }) => {
   return ({ postId, id, name, email, body })
 }
 
-// Error handler: must be the first middleware so it catches errors from everything after it
 export const errorHandler = async (ctx, next) => {
   try {
     await next()
-    // No route matched (404) or allowedMethods() refused the method (405): no body was set
     if (ctx.status >= 400 && ctx.body == null) {
       const status = ctx.status
       ctx.body = { error: status === 404 ? "Not found" : "Method not allowed" }
-      ctx.status = status // setting ctx.body changes a default 404 into 200, so restore it
+      ctx.status = status
     }
   } catch (err) {
     const status = err.status >= 400 && err.status < 500 ? err.status : 500
     ctx.status = status
     ctx.body = { error: status === 500 ? "Internal server error" : err.message }
-    if (status === 500) console.error(err) // only log real server bugs
+    if (status === 500) console.error(err)
   }
 }
